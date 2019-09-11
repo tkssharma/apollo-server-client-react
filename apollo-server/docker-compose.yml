@@ -1,0 +1,38 @@
+#  Run `docker-compose build` to build the images
+#  Run `docker-compose up` to run the containers
+version: '3.5'
+services:
+  mysql:
+    container_name: core_service_mysql
+    image: mysql:5.7
+    volumes:
+      - ~/datadir/mysql:/var/lib/mysql
+    ports:
+      - 3306:3306
+      - 33060:33060
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    restart: unless-stopped
+    networks:
+      - core_service_network
+  backend:
+    container_name: core_service_backend
+    build: ./
+    image: core_service_backend
+    environment:
+      - NODE_ENV=dev
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - 3000:3000
+      - 9229:9229
+    restart: unless-stopped
+    depends_on:
+      - mysql
+    networks:
+      - core_service_network
+networks:
+  core_service_network:
+    driver: bridge
+    name: core_service_network
